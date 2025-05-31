@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blah Blah Balh Login</title>
+    <script>console.log('Loading scripts at 08:42 PM BST, May 31, 2025');</script>
+    <script src="https://cdn.tailwindcss.com" onload="console.log('Tailwind CSS loaded')" onerror="console.error('Failed to load Tailwind CSS')"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-5">
+    <div id="root"></div>
+    <script>
+        console.log('Main script started');
+        const apiUrl = 'http://localhost:5000';
+        let isLoggedIn = false;
+        let user = null;
+
+        function showError(message) {
+            console.error('Error:', message);
+            document.getElementById('root').innerHTML = `
+                <div class="text-red-600 text-center bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-2xl font-bold mb-2">Error</h2>
+                    <p>${message}</p>
+                    <p>Check console for details.</p>
+                </div>
+            `;
+        }
+
+        function renderLogin(errorMessage = '') {
+            console.log('Rendering login button');
+            document.getElementById('root').innerHTML = `
+                <div class="bg-white bg-opacity-90 p-8 rounded-lg shadow-xl max-w-md w-full z-20">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2 text-center">Blah Blah Balh</h1>
+                    <p class="text-gray-600 text-center mb-6 italic">Click to sign in!</p>
+                    ${errorMessage ? `
+                        <p class="text-red-500 bg-red-100 p-3 rounded-md mb-4 text-sm text-center">
+                            ${errorMessage}
+                        </p>
+                    ` : ''}
+                    <button id="loginButton" onclick="openLoginPopup(event)" class="w-full flex items-center justify-center gap-3 bg-blue-600 text-white font-semibold text-lg py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer z-20 pointer-events-auto" aria-label="Sign in with Blah">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.58 6.48 22 12 22C17.52 22 22 17.58 22 12C22 6.48 17.58 2 12 2ZM12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4Z" fill="#A3BFFA"/>
+                            <path d="M12 7C9.24 7 7 9.24 7 12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12C17 9.24 14.76 7 12 7ZM12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9C13.66 9 15 10.34 15 12C15 13.66 13.66 15 12 15Z" fill="#7B8CDE"/>
+                            <path d="M12 10C11.45 10 11 10.45 11 11C11 11.55 11.45 12 12 12C12.55 12 13 11.55 13 11C13 10.45 12.55 10 12 10Z" fill="#4B5EAA"/>
+                        </svg>
+                        Sign in with Blah
+                    </button>
+                </div>
+            `;
+            const loginButton = document.getElementById('loginButton');
+            if (loginButton) {
+                console.log('Login button found in DOM');
+                loginButton.addEventListener('click', openLoginPopup);
+                const computedStyle = getComputedStyle(loginButton);
+                if (loginButton.disabled || computedStyle.pointerEvents === 'none' || computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+                    console.error('Button is not clickable: disabled=', loginButton.disabled, 'pointerEvents=', computedStyle.pointerEvents, 'display=', computedStyle.display, 'visibility=', computedStyle.visibility);
+                    showError('Login button is not clickable. Check console for details.');
+                } else {
+                    console.log('Button is clickable: pointerEvents=', computedStyle.pointerEvents, 'zIndex=', computedStyle.zIndex);
+                }
+            } else {
+                console.error('Login button not found in DOM');
+                showError('Login button failed to render. Check console for errors.');
+            }
+        }
+
+        function renderDashboard() {
+            console.log('Rendering dashboard');
+            document.getElementById('root').innerHTML = `
+                <div class="bg-white bg-opacity-90 p-8 rounded-lg shadow-xl max-w-md w-full text-center">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Welcome, ${user.name}!</h2>
+                    <p class="text-gray-600 mb-4">Email: ${user.email}</p>
+                    <button id="logoutButton" class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 cursor-pointer pointer-events-auto" aria-label="Sign out">
+                        Sign Out
+                    </button>
+                </div>
+            `;
+            const logoutButton = document.getElementById('logoutButton');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', handleLogout);
+                console.log('Logout button event attached');
+            }
+        }
+
+        function openLoginPopup(event) {
+            console.log('Login button clicked at 08:42 PM BST, May 31, 2025');
+            event.preventDefault();
+            const width = 500;
+            const height = 600;
+            const left = window.innerWidth ? (window.innerWidth - width) / 2 : 0;
+            const top = window.innerHeight ? (window.innerHeight - height) / 2 : 0;
+            try {
+                const popup = window.open(
+                    `${apiUrl}/login`,
+                    'BlahLogin',
+                    `width=${width},height=${height},top=${top},left=${left},resizable=no,scrollbars=yes`
+                );
+                if (!popup || popup.closed) {
+                    console.error('Pop-up blocked or failed to open');
+                    renderLogin('Please allow pop-ups for this site and click the button again');
+                } else {
+                    console.log('Pop-up opened successfully at', new Date().toISOString());
+                    popup.focus();
+                    const checkPopup = setInterval(() => {
+                        if (popup.closed) {
+                            clearInterval(checkPopup);
+                            console.log('Pop-up closed');
+                        }
+                    }, 500);
+                }
+            } catch (err) {
+                console.error('Pop-up error:', err.message);
+                renderLogin('Failed to open login window: ' + err.message);
+            }
+        }
+
+        function handleLogout() {
+            console.log('Logging out');
+            localStorage.removeItem('sessionToken');
+            isLoggedIn = false;
+            user = null;
+            renderLogin();
+        }
+
+        function checkSession() {
+            console.log('Checking session');
+            const token = localStorage.getItem('sessionToken');
+            if (!token) {
+                console.log('No session token');
+                renderLogin();
+                return;
+            }
+            fetch(`${apiUrl}/api/user`, {
+                headers: { 'X-Session-Token': token }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                return res.json();
+            })
+            .then(data => {
+                if (data.name && data.email) {
+                    console.log('Session valid, user:', data);
+                    user = data;
+                    isLoggedIn = true;
+                    renderDashboard();
+                } else {
+                    console.error('Invalid user data:', data);
+                    localStorage.removeItem('sessionToken');
+                    renderLogin('Session invalid');
+                }
+            })
+            .catch(err => {
+                console.error('Session check error:', err.message);
+                localStorage.removeItem('sessionToken');
+                renderLogin('Session expired. Please sign in.');
+            });
+        }
+
+        window.addEventListener('message', (event) => {
+            console.log('Received message from:', event.origin);
+            if (event.origin !== apiUrl) {
+                console.warn('Invalid message origin:', event.origin);
+                return;
+            }
+            console.log('Message data:', event.data);
+            if (event.data.token && event.data.user) {
+                localStorage.setItem('sessionToken', event.data.token);
+                user = event.data.user;
+                isLoggedIn = true;
+                console.log('Login successful, user:', user);
+                renderDashboard();
+            } else if (event.data.error) {
+                console.error('Login error:', event.data.error);
+                renderLogin(event.data.error);
+            }
+        });
+
+        try {
+            console.log('Initializing app');
+            checkSession();
+        } catch (err) {
+            console.error('Initialization error:', err.message);
+            showError('Failed to initialize: ' + err.message);
+        }
+    </script>
+</body>
+</html>
